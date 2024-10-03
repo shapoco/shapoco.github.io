@@ -1,2 +1,3 @@
-# shapoco.github.io
-シャポ庫
+# シャポ庫
+
+Google検索結果にfaviconを表示させるためのダミーページ
