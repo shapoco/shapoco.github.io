@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="keywords" content="コンピュータの電源を切る準備ができました,It's now safe to turn off your computer,#safetoturnoff">
+    <meta name="description" content="コンピュータの電源を切る準備ができました">
+
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:site" content="@shapoco" />
+    <meta property="og:url" content="https://shapoco.github.io/its-now-safe-to-turn-off-your-computer/" />
+    <meta property="og:title" content="コンピュータの電源を切る準備ができました" />
+    <meta property="og:description" content="例のアレ" />
+    <meta property="og:image" content="https://shapoco.github.io/its-now-safe-to-turn-off-your-computer/card.png" />
+
+    <link rel="icon" href="/its-now-safe-to-turn-off-your-computer/favicon192.png" sizes="192x192">
+    <link rel="apple-touch-icon" href="/its-now-safe-to-turn-off-your-computer/apple-touch-icon180.png" sizes="180x180">
+    <link rel="shortcut icon" href="/its-now-safe-to-turn-off-your-computer/favicon48.ico">
+
+    <style>
+      body {
+        background-color: black;
+        font-family: メイリオ, Meiryo, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        color: #fff;
+      }
+      
+      #msg {
+        color: #fa0;
+        text-align: center;
+        filter: blur(calc(min(0.1vh, 0.1vw)));
+        white-space: pre;
+        z-index: 0;
+      }
+
+      /* なんか iPhone だけ blur() の効きかがキツいので除外する */
+      _::-webkit-full-page-media, _:future, :root #msg {
+  	    filter: none !important;
+      }
+
+      #menu {
+        position: fixed;
+        right: 0px;
+        bottom: 0px;
+        padding: 20px;
+      }
+
+      #menu img {
+        width: 32px;
+        height: 32px;
+      }
+
+      @media(max-width:640px){
+        #menu a::after {
+          content: '\A';
+          white-space: pre;
+        }
+      }
+
+      .fadeOut {
+        animation: fadeOutKeys 1s ease 3s forwards;
+      }
+
+      @keyframes fadeOutKeys {
+        0% { opacity: 1; }
+        100% { opacity: 0; }
+      }
+
+      #menu a {
+        margin: 0px 10px 0px 0px;
+        color: #fff !important;
+        text-decoration: none;
+      }
+
+      img {
+        vertical-align: middle;
+      }
+ 
+      .wnd_outer {
+        position: absolute;
+        z-index: 99;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%,-50%);
+        border-style: solid;
+        border-width: 1px;
+        border-color: #fff #000 #000 #fff;
+        background: #cccccc;
+        font-family: 'MS UI Gothic', sans-serif;
+      }
+
+      .wnd_inner {
+        border-style: solid;
+        border-width: 1px;
+        border-color: #ccc #444 #444 #cccccc;
+      }
+
+      .wnd_outer h1 {
+        padding: 1px;
+        margin: 1px;
+        background: #088;
+        color: #fff;
+        font-weight: bold;
+        font-size: 16px;
+        line-height: 16px;
+      }
+
+      .wnd_client {
+        color: #000;
+        font-size: 16px;
+        line-height: 20px;
+      }
+
+      .wnd_client h2,
+      .wnd_client p,
+      .wnd_client hr {
+        margin: 10px;
+      }
+
+      .wnd_client h2 {
+        font-size: 24px;
+        line-height: 24px;
+        font-weight: bold;
+        font-style: italic;
+        border: none;
+        border-bottom: solid 1px #000;
+        color: #000;
+        background: transparent;
+      }
+
+      .wnd_client textarea,
+      .wnd_client input[type='text'],
+      .wnd_client input[type='number'] {
+        border: 0px;
+        border-radius: 0px;
+        background: #fff;
+        box-shadow: inset -1px -1px #fff, inset 1px 1px #333, inset -2px -2px #fff, inset 2px 2px #999;
+        padding: 5px;
+        font-family: 'ＭＳ ゴシック', monospace;
+        font-size: 16px;
+        line-height: 16px;
+      }
+
+      .wnd_client input[type='checkbox'] {
+        appearance: none;
+        position: relative;
+        border: 0px;
+        border-radius: 0px;
+        background: #fff;
+        box-shadow: inset -1px -1px #fff, inset 1px 1px #333, inset -2px -2px #fff, inset 2px 2px #999;
+        margin: 0px 5px;
+        width: 18px;
+        height: 18px;
+        vertical-align: -3px;
+      }
+
+      .wnd_client input[type="checkbox"]:checked::before {
+        position: absolute;
+        top: 2px;
+        left: 6px;
+        transform: rotate(50deg);
+        width: 5px;
+        height: 10px;
+        border-right: 2px solid #000;
+        border-bottom: 2px solid #000;
+        content: '';
+      }
+
+      .wnd_outer button {
+        border: 0px;
+        border-radius: 0px;
+        background: #cccccc;
+        box-shadow: inset -1px -1px #333, inset 1px 1px #fff, inset -2px -2px #999, inset 2px 2px #fff;
+        padding: 5px 0px;
+        font-family: 'ＭＳ Ｐゴシック', sans-serif;
+        font-size: 16px;
+        line-height: 20px;
+        color: #000;
+      }
+
+      .wnd_outer button:active {
+        box-shadow: inset -1px -1px #fff, inset 1px 1px #333, inset -2px -2px #fff, inset 2px 2px #999;
+      }
+
+      .wnd_outer button.close_box {
+        width: 16px;
+        height: 16px;
+        font-size: 16px;
+        line-height: 16px;
+        font-weight: bold;
+        float: right;
+      }
+
+      .wnd_outer button.close_box span {
+        position: relative;
+        top: -8px;
+        left: 0px;
+      }
+
+      .wnd_outer .label {
+        display: inline-block;
+        margin: 0px 5px;
+      }
+
+      .wnd_outer a {
+        color: #00f !important;
+      }
+
+    </style>
+
+    <title>コンピュータの電源を切る準備ができました</title>
+  </head>
+
+  <body>
+    <div id="msg">
+      <noscript>
+        コンピュータの電源を<br>切る準備ができました
+      </noscript>
+    </div>
+
+    <div id="menu">
+      <a href="javascript:helpOpen()">
+        <img src="img/icon_help.png?1">これは何？
+      </a>
+      <a href="javascript:editorOpen()">
+        <img src="img/icon_edit.png?1">編集
+      </a>
+      <a href="https://x.com/search?q=url%3Ahttps%3A%2F%2Fshapoco.github.io%2Fits-now-safe-to-turn-off-your-computer%2F%20OR%20%23safetoturnoff&src=typed_query&f=live" target="_blank">
+        <img src="img/icon_search.png?1">𝕏で検索
+      </a>
+      <a href="javascript:shareOnX()">
+        <img src="img/icon_share.png?1">𝕏で共有
+      </a>
+    </div>
+
+    <form id="editor" class="wnd_outer" style="display: none;">
+      <div class="wnd_inner">
+        <h1>
+          編集
+          <button type="button" class="close_box" onclick="editorCancel()"><span>x</span></button>
+        </h1>
+        <div class="wnd_client">
+          <p>
+            テキスト<br>
+            <textarea id="text" rows="3" style="width: 300px"></textarea><br>
+          </p>
+          <p>
+            <span class="label" style="width: 100px;">フォントファミリ</span>
+            <input id="font_family" type="text" style="width: 150px;" />
+          </p>
+          <p>
+            <span class="label" style="width: 100px;">スタイル</span>
+            <input id="font_bold" type="checkbox" />
+            <label for="font_bold">太字</label>
+          </p>
+          <p>
+            <span class="label" style="width: 100px;">文字幅</span>
+            <input id="x_scale" type="number" min="50" max="200" style="width: 150px;" />
+            <span class="label">%</span>
+          </p>
+          <p>
+            <span class="label" style="width: 100px;">文字色</span>
+            <input id="fore_color" type="text" style="width: 150px;" />
+          </p>
+          <hr>
+          <p style="text-align: right;">
+            <button type="button" style="width: 100px;" onclick="editorApply()">適用</button>
+            <button type="button" style="width: 100px;" onclick="editorCancel()">キャンセル</button>
+          </p>
+        </div>
+      </div>
+    </form>
+
+    <form id="help" class="wnd_outer" style="display: none;">
+      <div class="wnd_inner">
+        <h1>
+          ヘルプ
+          <button type="button" class="close_box" onclick="helpClose()"><span>x</span></button>
+        </h1>
+        <div class="wnd_client" style="width: 350px;">
+          <h2>これは何？</h2>
+          <p>
+            Windows 95 時代のパソコンで OS のシャットダウン後に表示されていた画面を再現したジョークサイトです。
+          </p>
+          <p>
+            Windows 95 が登場した頃のパソコンの多くは、シャットダウン後に「自分で自分の電源を切る機能」を持っていませんでした。
+            そのためユーザは OS のシャットダウン完了後に手動で電源スイッチを操作して電源を切る必要がありました。
+            「コンピュータの電源を切る準備ができました」は、OS のシャットダウン処理が完了し、電源を切れる状態になったことを知らせる表示です。
+          </p>
+          <p>
+            参考記事：<br>
+            <a href="https://gigazine.net/news/20160429-windows-95-turn-off/" target="_blank">
+              Windowsの電源オフ時に「コンピューターの電源を切る準備ができました」と表示される理由とは？ - GIGAZINE
+            </a>
+          </p>
+          <p>
+            右下の「編集」ボタンから好みのテキストを表示させることができます。
+          </p>
+          <hr>
+          <p style="text-align: right;">
+            <a href="https://github.com/shapoco/its-now-safe-to-turn-off-your-computer" target="_blank" style="float: left;">
+              @shapoco
+            </a>
+            <button type="button" style="width: 100px;" onclick="helpClose()">閉じる</button>
+          </p>
+        </div>
+      </div>
+    </form>
+
+    <script>
+      const defaultArgs = {
+        'text': 'コンピュータの電源を\n切る準備ができました',
+        'fontFamily': "'ＭＳ Ｐゴシック', sans-serif",
+        'fontBold': '0',
+        'xScale': '150',
+        'foreColor': 'orange',
+      };
+      var args = { ...defaultArgs };
+
+      const argMapFwd = {
+        't': 'text',
+        'f': 'fontFamily',
+        'b': 'fontBold',
+        'w': 'xScale',
+        'c': 'foreColor',
+      };
+      const argMapRev = function(){
+        var ret = {};
+        Object.keys(argMapFwd).forEach(key => {
+          ret[argMapFwd[key]] = key;
+        });
+        return ret;
+      }();
+
+      function main() {
+        var urlArgs = getOpts();
+        const editFlag = 'edit' in urlArgs;
+        const helpFlag = 'help' in urlArgs;
+        if (editFlag) delete urlArgs['edit'];
+        if (editFlag) delete urlArgs['help'];
+        
+        colorPickerSetup(document.querySelector('#fore_color'));
+
+        document.body.addEventListener('mousemove', e => { menuFadeOut(); });
+        document.body.addEventListener('touchstart', e => { menuFadeOut(); });
+        menu.addEventListener('mouseover', e => { menuShow(); });
+        menu.addEventListener('mouseout', e => { menuFadeOut(); });
+        menuFadeOut();
+
+        const editor = document.querySelector('#editor');
+        editor.addEventListener('submit', e => { editorApply(); });
+        editor.addEventListener('keydown', e => {
+          if (e.ctrlKey && e.keyCode == 13) { // Ctrl + Enter
+            editorApply();
+          }
+        });
+
+        Object.keys(urlArgs).forEach(key => {
+          const value = urlArgs[key];
+          if (key in argMapFwd) {
+            key = argMapFwd[key];
+          }
+          if (key in args) {
+            args[key] = value;
+          }
+          else {
+            console.log(`ERROR: Unknown arg: '${key}=${value}'`)
+          }
+        });
+
+        updateMessage();
+
+        if (editFlag) editorOpen();
+        if (helpFlag) helpOpen();
+      }
+
+      function menuShow() {
+        const menu = document.querySelector('#menu');
+        menu.classList.remove('fadeOut');
+        menu.style.opacity = 1;
+      }
+
+      function menuFadeOut() {
+        const menu = document.querySelector('#menu');
+        menu.classList.remove('fadeOut');
+        menu.style.opacity = 1;
+        // CSS アニメーションのヒントとコツ - Web API | MDN
+        // https://developer.mozilla.org/ja/docs/Web/API/Web_Animations_API/Tips#%E5%86%8D%E5%BA%A6%E3%82%A2%E3%83%8B%E3%83%A1%E3%83%BC%E3%82%B7%E3%83%A7%E3%83%B3%E3%82%92%E5%AE%9F%E8%A1%8C%E3%81%99%E3%82%8B
+        menu.style.opacity = 1;
+        window.requestAnimationFrame(function(time) {
+          window.requestAnimationFrame(function(time) {
+            menu.classList.add('fadeOut');
+          });
+        });
+      }
+
+      function editorOpen() {
+        document.querySelector('#editor #text').value = args.text;
+        document.querySelector('#editor #font_family').value = args.fontFamily;
+        document.querySelector('#editor #font_bold').checked = args.fontBold == '1';
+        document.querySelector('#editor #x_scale').value = args.xScale;
+        document.querySelector('#editor #fore_color').value = args.foreColor;
+        colorPickerChanged(document.querySelector('#editor #fore_color'));
+        document.querySelector('#editor').style.display = 'block';
+      }
+
+      function editorApply() {
+        args.text = document.querySelector('#editor #text').value;
+        args.fontFamily = document.querySelector('#editor #font_family').value;
+        args.fontBold = document.querySelector('#editor #font_bold').checked ? '1' : '0';
+        args.xScale = document.querySelector('#editor #x_scale').value;
+        args.foreColor = document.querySelector('#editor #fore_color').value;
+        updateMessage();
+        document.querySelector('#editor').style.display = 'none';
+
+        params = [];
+        Object.keys(args).forEach(key => {
+          if (key in defaultArgs) {
+            var defaulValueStr = encodeURIComponent(defaultArgs[key]);
+            var userValueStr = encodeURIComponent(args[key]).replaceAll('.', '%2e');
+            if (userValueStr != defaulValueStr) {
+              params.push(`${argMapRev[key]}=${userValueStr}`)
+            }
+          }
+        });
+        if (params.length > 0) {
+          window.location = `#${params.join('&')}`;
+        }
+        else {
+          window.location = './';
+        }
+      }
+
+      function editorCancel() {
+        document.querySelector('#editor #text').value = msg;
+        document.querySelector('#editor').style.display = 'none';
+      }
+
+      function updateMessage() {
+        const msg = document.querySelector('#msg');
+        msg.innerHTML = escapeForHtml(args.text).replaceAll(/\r?\n/g, '<br>');
+        msg.style.transform = `scale(${args.xScale}%,1)`;
+        msg.style.fontFamily = args.fontFamily;
+        msg.style.fontWeight = args.fontBold == '1' ? 'bold' : 'normal';
+        msg.style.color = args.foreColor;
+
+        [r, g, b] = rgbFromStr(args.foreColor);
+        const rgbMax = Math.max(r, Math.max(g, b));
+        const sub0 = Math.round(rgbMax * 1 / 2);
+        const sub1 = Math.round(rgbMax * 3 / 4);
+        const sub2 = Math.round(rgbMax * 7 / 8);
+        const textShadowValue =
+          `0 0 0.4ex rgb(${Math.max(0, r - sub0) * 2} ${Math.max(0, g - sub0) * 2} ${Math.max(0, b - sub0) * 2}),\n` +
+          `0 0 0.8ex rgb(${Math.max(0, r - sub1) * 3} ${Math.max(0, g - sub1) * 3} ${Math.max(0, b - sub1) * 3}),\n` +
+          `0 0 1.6ex rgb(${Math.max(0, r - sub2) * 4} ${Math.max(0, g - sub2) * 4} ${Math.max(0, b - sub2) * 4})`
+        console.log(textShadowValue);
+        msg.style.textShadow = textShadowValue;
+
+        const ctx = document.createElement('canvas').getContext('2d');
+        ctx.font = `10px "args.fontFamily"`;
+        const lines = args.text.split('\n');
+        const widths = lines.map(s => ctx.measureText(s).width);
+        const textWidth = widths.reduce((a, b) => { return Math.max(a, b); }) * parseFloat(args.xScale) / 100;
+        const rows = lines.length;
+        msg.style.fontSize = `calc(min(${70 / Math.max(10, rows)}vh, ${600 / textWidth}vw))`;
+      }
+
+      function helpOpen() {
+        document.querySelector('#help').style.display = 'block';
+      }
+
+      function helpClose() {
+        document.querySelector('#help').style.display = 'none';
+      }
+
+      function getOpts() {
+        var args = {};
+        const m = window.location.href.match(/#([^#]+)$/);
+        if (m) {
+          m[1].split('&').forEach(e => {
+            const kv = e.split('=');
+            if (1 <= kv.length && kv.length <= 2 && kv[0]) {
+              const key = decodeURIComponent(kv[0]);
+              const value = kv.length == 2 ? decodeURIComponent(kv[1]) : true;
+              args[key] = value;
+            }
+            else {
+              console.log(`ERROR: Invalid arg format: '${e}'`)
+            }
+          });
+        }
+        return args;
+      }
+
+      function colorPickerSetup(elem) {
+        elem.addEventListener('changed', e => { colorPickerChanged(e.target) });
+        elem.addEventListener('keyup', e => { colorPickerChanged(e.target) });
+        colorPickerChanged(elem);
+      }
+
+      function colorPickerChanged(elem) {
+        elem.style.backgroundColor = elem.value;
+        [r, g, b] = rgbFromStr(elem.value);
+        const gray = r * 0.299 + g * 0.587 + b * 0.114;
+        elem.style.color = gray < 128 ? '#fff' : '#000';
+      }
+
+      function rgbFromStr(colorStr) {
+        // JavaScriptで、要素に適用されている色を取得する
+        // https://qiita.com/ginpei/items/b9e95a6dea9dcb945589
+        try {
+          const elem = document.createElement('span');
+          elem.style.position = 'absolute';
+          elem.style.left = 0;
+          elem.style.right = 0;
+          document.body.appendChild(elem);
+          console.log(`'${colorStr}'`);
+          elem.style.color = colorStr.trim();
+          const rgbStr = window.getComputedStyle(elem).color;
+          console.log(`'${rgbStr}'`);
+          return rgbStr.match(/\d+/g).map(e => parseFloat(e)).slice(0, 3);
+        }
+        catch (ex) {
+          console.log(ex);
+          return [0, 0, 0];
+        }
+      }
+
+      function escapeForHtml(s) {
+        return s
+          .replaceAll('&', '&amp;')
+          .replaceAll('<', '&lt;')
+          .replaceAll('>', '&gt;')
+          .replaceAll('"', '&quot;')
+          .replaceAll("'", '&#39;')
+          .replaceAll(" ", '&nbsp;')
+          .replaceAll("　", '&#x3000;');
+      }
+
+      function shareOnX() {
+        const msg = args.text.replaceAll(/\s*[\r\n]+\s*/g, ' ').trim();
+        const text = `${msg}\n${window.location} #safetoturnoff`;
+        window.open('https://x.com/intent/tweet?text=' + encodeURIComponent(text));
+      }
+
+      function isMobile() {
+        return window.matchMedia && window.matchMedia('(max-device-width: 640px)').matches;
+      }
+
+      main();
+    </script>
+  </body>
+
+</html>
