@@ -26,11 +26,17 @@
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-BMDGFGR0Z4"></script>
     <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
+      var remotHost = window.location.hostname;
+      if (remotHost == "localhost") {
+        console.log(`Google Analytics disabled on: '${remotHost}'`);
+      }
+      else {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
 
-      gtag('config', 'G-BMDGFGR0Z4');
+        gtag('config', 'G-BMDGFGR0Z4');
+      }
     </script>
     
     <link rel="icon" href="/favicon192.png" sizes="192x192">
