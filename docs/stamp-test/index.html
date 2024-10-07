@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-BMDGFGR0Z4"></script>
+    <script>
+      var remotHost = window.location.hostname;
+      if (remotHost == "localhost") {
+        console.log(`Google Analytics disabled on: '${remotHost}'`);
+      }
+      else {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-BMDGFGR0Z4');
+      }
+    </script>
+    
+    <title>スタンプのテスト</title>
+  </head>
+
+  <body>
+    <p style="height: 400px;">
+    <p id="shapoconet_stamp_wrap" style="text-align: center;"></p>
+    <script async src="https://shapoco.net/stamp/v1.0/widget.js"></script>
+    <p style="height: 400px;"></p>
+  </body>
+
+</html>
