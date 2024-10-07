@@ -110,7 +110,7 @@ class ShapocoNetStamp {
     }
     if (resp.clientId) {
       this.clientId = resp.clientId;
-      document.cookie = `${ShapocoNetStamp.COOKIE_KEY}=${encodeURIComponent(this.clientId)}; max-age=${86400 * 365}; SameSite=Lax; Secure`;
+      document.cookie = `${ShapocoNetStamp.COOKIE_KEY}=${encodeURIComponent(this.clientId)}; max-age=86400; SameSite=Lax; Secure`;
     }
   }
 
