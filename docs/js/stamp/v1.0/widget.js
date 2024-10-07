@@ -147,7 +147,7 @@ class ShapocoNetStamp {
       button.classList.add('shapoconet_stamp_stamp');
       button.addEventListener('click', evt => this.stampClicked(button));
       button.innerHTML =
-        `<span class="shapoconet_stamp_emoji">${emoji}</span> ` +
+        `<span class="shapoconet_stamp_emoji">${emoji}</span>` +
         `<span class="shapoconet_stamp_count"></span>`;
       this.updateButton(button, stamp.count, stamp.sent);      
       this.stampButtonList.appendChild(button);
