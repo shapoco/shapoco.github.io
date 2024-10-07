@@ -23,6 +23,9 @@ class ShapocoNetStamp {
     this.sendButton = null;
     this.clientId = null;
 
+    const d = new Date();
+    this.urlPostfix = d.getDate() + "-" + (d.getMonth() + 1) + "-" + d.getDate();
+
     document.cookie.split(';').forEach(entry => {
       const kv = entry.trim().split('=');
       if (kv[0].trim() == ShapocoNetStamp.COOKIE_KEY) {
@@ -62,7 +65,7 @@ class ShapocoNetStamp {
 
     const link = document.createElement('link');
     link.rel = 'stylesheet';
-    link.href = `${ShapocoNetStamp.API_URL_BASE}/widget.css?14`;
+    link.href = `${ShapocoNetStamp.API_URL_BASE}/widget.css?${this.urlPostfix}`;
     document.body.append(link);
     link.addEventListener('load', evt => {
       this.cssLoaded = true;
@@ -251,7 +254,7 @@ class ShapocoNetStamp {
     window.requestAnimationFrame(t => { this.setPickerPos(); });
 
     // emoji 辞書のロード
-    fetch(`${ShapocoNetStamp.API_URL_BASE}/emoji16.0.json?8`)
+    fetch(`${ShapocoNetStamp.API_URL_BASE}/emoji16.0.json?${this.urlPostfix}`)
       .then(response => response.json())
       .then(data => { 
         this.emojiCategories = data;
