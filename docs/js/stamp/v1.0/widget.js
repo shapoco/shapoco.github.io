@@ -95,7 +95,7 @@ class ShapocoNetStamp {
 
   onResourceLoaded() {
     if (this.cssLoaded && this.jsonLoaded) {
-      this.updateButtons();
+      this.updateButtons(true);
     }
   }
 
@@ -111,7 +111,7 @@ class ShapocoNetStamp {
     }
   }
 
-  updateButtons() {
+  updateButtons(sort) {
     var tmpStamps = { ...this.stamps };
   
     // 既にあるボタンを更新する
@@ -129,7 +129,15 @@ class ShapocoNetStamp {
     });
   
     // 足りないボタンを追加する
-    Object.keys(tmpStamps).forEach(emoji => {
+    var keys = Object.keys(tmpStamps);
+    if (sort) {
+      keys.sort((a, b) => {
+        if (tmpStamps[a].count < tmpStamps[b].count) return 1;
+        if (tmpStamps[a].count > tmpStamps[b].count) return -1;
+        return 0;
+      });
+    }
+    keys.forEach(emoji => {
       const stamp = tmpStamps[emoji];
       const button = document.createElement('button');
       button.type = 'button';
@@ -175,7 +183,7 @@ class ShapocoNetStamp {
         if (this.isDebugMode) console.log(resp);
         this.procApiResponse(resp);
         if (resp.success) {
-          this.updateButtons();
+          this.updateButtons(false);
         }
       })
       .catch(error => { console.error('Loading JSON failed:', error); });
