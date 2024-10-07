@@ -24,7 +24,7 @@ class ShapocoNetStamp {
     this.clientId = null;
 
     const d = new Date();
-    this.urlPostfix = d.getDate() + "-" + (d.getMonth() + 1) + "-" + d.getDate();
+    this.urlPostfix = `${d.getDate()}-${d.getMonth() + 1}-${d.getDate()}b`;
 
     document.cookie.split(';').forEach(entry => {
       const kv = entry.trim().split('=');
@@ -110,7 +110,7 @@ class ShapocoNetStamp {
     }
     if (resp.clientId) {
       this.clientId = resp.clientId;
-      document.cookie = `${ShapocoNetStamp.COOKIE_KEY}=${encodeURIComponent(this.clientId)}; max-age=86400; SameSite=Lax; Secure`;
+      document.cookie = `${ShapocoNetStamp.COOKIE_KEY}=${encodeURIComponent(this.clientId)}; max-age=${86400 * 365}; SameSite=Lax; Secure`;
     }
   }
 
