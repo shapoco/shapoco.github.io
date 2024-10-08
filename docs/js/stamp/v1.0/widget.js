@@ -100,6 +100,7 @@ class ShapocoNetStamp {
         this.onResourceLoaded(this);
       })
       .catch(error => {
+        console.log('ERROR: ' + error);
         this.stampButtonList.innerHTML = '';
         this.showMessage(false, 'スタンプを読み込めませんでした');
       });
@@ -262,12 +263,13 @@ class ShapocoNetStamp {
         if (this.isDebugMode) console.log(resp);
         this.procApiResponse(resp);
         if (resp.success) {
-          this.emojiBox.value = '';
-          this.commnetBox.value = '';
+          if (this.emojiBox) this.emojiBox.value = '';
+          if (this.commnetBox) this.commnetBox.value = '';
           this.updateButtons(false);
         }
       })
       .catch(error => {
+        console.log('ERROR: ' + error);
         this.showMessage(false, '通信エラー');
       });
   }
@@ -356,6 +358,7 @@ class ShapocoNetStamp {
         this.fixPopupPos(this.addButton, this.pickerWindow);
       })
       .catch(error => {
+        console.log('ERROR: ' + error);
         this.emojiList.innerHTML = '通信エラー';
       });
 
