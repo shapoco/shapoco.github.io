@@ -1,30 +1,37 @@
 
 class ShapocoNetStamp {
   static API_URL_BASE = 'https://shapoco.net/stamp/v1.0';
+  static URL_POSTFIX = '20241009000200';
   static COOKIE_KEY = 'ShapocoNetStamp_clientId';
 
   constructor() {
     this.cssLoaded = false;
     this.jsonLoaded = false;
+    
     this.stamps = [];
+    this.comments = [];
     this.history = [];
+    this.commentRule = {
+      maxLength: 64,
+      ngWords: ['http://', 'https://', 'ftp://']
+    };
     this.emojiCategories = [];
     this.emojiDict = {};
+
     this.container = document.querySelector('#shapoconet_stamp_wrap');
     this.stampButtonList = null;
     this.addButton = null;
     this.statusMsg = null;
     this.location = window.location.href;
     this.isDebugMode = this.location.startsWith('http://localhost:');
-    this.picker = null;
+    this.pickerWindow = null;
+    this.commentWindow = null;
     this.categoryList = null;
     this.emojiList = null;
-    this.inputBox = null;
+    this.emojiBox = null;
+    this.commnetBox = null;
     this.sendButton = null;
     this.clientId = null;
-
-    const d = new Date();
-    this.urlPostfix = `${d.getDate()}-${d.getMonth() + 1}-${d.getDate()}b`;
 
     document.cookie.split(';').forEach(entry => {
       const kv = entry.trim().split('=');
@@ -51,7 +58,7 @@ class ShapocoNetStamp {
     this.addButton.innerHTML = '<span class="shapoconet_stamp_emoji" title="スタンプを追加する">➕</span>';
     this.container.appendChild(this.addButton);
     this.addButton.addEventListener('click', evt => {
-      if (this.picker && this.picker.style.display != 'none') {
+      if (this.pickerWindow && this.pickerWindow.style.visibility != 'hidden') {
         this.hidePicker();
       }
       else {
@@ -61,12 +68,12 @@ class ShapocoNetStamp {
 
     this.statusMsg = document.createElement('span');
     this.statusMsg.id = 'shapoconet_stamp_status';
-    this.statusMsg.style.display = 'none';
+    this.statusMsg.style.visibility = 'hidden';
     this.container.appendChild(this.statusMsg);
 
     const link = document.createElement('link');
     link.rel = 'stylesheet';
-    link.href = `${ShapocoNetStamp.API_URL_BASE}/widget.css?${this.urlPostfix}`;
+    link.href = `${ShapocoNetStamp.API_URL_BASE}/widget.css?${ShapocoNetStamp.URL_POSTFIX}`;
     document.body.append(link);
     link.addEventListener('load', evt => {
       this.cssLoaded = true;
@@ -87,8 +94,6 @@ class ShapocoNetStamp {
       .then(resp => resp.json())
       .then(resp => { 
         if (this.isDebugMode) console.log(resp);
-        this.stamps = resp.stamps;
-        this.history = resp.history;
         this.procApiResponse(resp);
         this.jsonLoaded = true;
         if (this.isDebugMode) console.log("JSON loaded.");
@@ -111,11 +116,16 @@ class ShapocoNetStamp {
     this.showMessage(resp.success, resp.message);
     if (resp.success) {
       this.stamps = resp.stamps;
+      this.comments = resp.comments;
       this.history = resp.history;
+      this.comments.reverse(); // 新着順にする
     }
     if (resp.clientId) {
       this.clientId = resp.clientId;
       document.cookie = `${ShapocoNetStamp.COOKIE_KEY}=${encodeURIComponent(this.clientId)}; max-age=86400; SameSite=Lax; Secure`;
+    }
+    if (resp.commentRule) {
+      this.commentRule = resp.commentRule;
     }
   }
 
@@ -150,7 +160,10 @@ class ShapocoNetStamp {
       const button = document.createElement('button');
       button.type = 'button';
       button.classList.add('shapoconet_stamp_stamp');
-      button.addEventListener('click', evt => this.stampClicked(button));
+      button.addEventListener('click', evt => this.onStampClicked(button));
+      button.addEventListener('mouseover', evt => this.onStampMouseOver(button));
+      button.addEventListener('mouseleave', evt => this.onStampMouseLeave(button));
+      button.addEventListener('wheel', evt => this.onStampWheel(button, evt));
       button.innerHTML =
         `<span class="shapoconet_stamp_emoji">${emoji}</span>` +
         `<span class="shapoconet_stamp_count"></span>`;
@@ -172,19 +185,74 @@ class ShapocoNetStamp {
     }
   }
   
-  stampClicked(button) {
+  onStampClicked(button) {
     const emoji = button.querySelector('.shapoconet_stamp_emoji').innerHTML.trim();
     const remove = emoji in this.stamps ? this.stamps[emoji].sent : false;
-    this.updateStamp(emoji, remove);
+    this.updateStamp(emoji, remove, '');
+  }
+
+  onStampMouseOver(button) {
+    const emoji = button.querySelector('.shapoconet_stamp_emoji').innerHTML.trim();
+    const popup = this.getCommentWindow();
+    const pickerShown = this.pickerWindow && this.pickerWindow.style.visibility == 'visible';
+    var numComments = 0;
+    if (popup.style.visibility != 'visible' && !pickerShown) {
+      const list = popup.querySelector('.shapoconet_stamp_comment_list');
+      var html = '';
+      html += '<ul>';
+      this.comments.forEach(entry => {
+        if (entry.emoji == emoji) {
+          html += `<li>${entry.comment}</li>`
+          numComments += 1;
+        }
+      });
+      html += '</ul>';
+      list.innerHTML = html;
+      popup.style.visibility = 'visible';
+      window.requestAnimationFrame(t => { 
+        this.fixPopupPos(button, popup);
+      });
+      const title = popup.querySelector('.shapoconet_stamp_comment_title');
+      if (numComments > 0) {
+        list.style.display = 'block';
+        title.innerHTML =  `${numComments} 件のコメント`;
+      }
+      else {
+        list.style.display = 'none';
+        title.innerHTML = '(コメントなし)';
+      }
+    }
+  }
+
+  onStampMouseLeave(button) {
+    const window = this.getCommentWindow();
+    window.style.visibility = 'hidden';
   }
   
-  updateStamp(emoji, remove) {
+  onStampWheel(button, evt) {
+    if (!(this.commentWindow && this.commentWindow.style.visibility == 'visible')) return;
+    const wrapper = this.commentWindow.querySelector('.shapoconet_stamp_comment_list');
+    const ul = wrapper.querySelector('ul');
+    if (ul.getBoundingClientRect().height <= wrapper.getBoundingClientRect().height) return;
+    var amount = evt.deltaY;
+    switch(evt.deltaMode) {
+    case WheelEvent.DOM_DELTA_LINE: amount = evt.deltaY * 25; break;
+    case WheelEvent.DOM_DELTA_PAGE: amount = evt.deltaY * 250; break;
+    }
+    wrapper.scrollBy({top: amount, behavior: 'smooth'});
+    evt.stopPropagation();
+    evt.preventDefault();
+  }
+
+  updateStamp(emoji, remove, comment) {
+    comment = comment.trim();
     var params = {
       s: this.location,
       m: remove ? 'd' : 'a',
       k: emoji,
     };
     if (this.clientId) params['i'] = this.clientId;
+    if (comment) params['c'] = comment;
     this.fetchApi(params)
       .then(resp => resp.json())
       .then(resp => { 
@@ -208,61 +276,62 @@ class ShapocoNetStamp {
   }
 
   showPicker() {
-    this.getPicker().style.display = 'block';
-    this.setPickerPos();
-    this.updateSendButtonStatus();
+    this.getPickerWindow().style.visibility = 'visible';
+    this.fixPopupPos(this.addButton, this.pickerWindow);
+    this.validateEmojiAndComment();
   }
 
   hidePicker() {
-    this.getPicker().style.display = 'none';
+    this.getPickerWindow().style.visibility = 'hidden';
   }
 
   onSendFromPicker() {
-    this.updateStamp(this.inputBox.value, false);
+    this.updateStamp(this.emojiBox.value, false, this.commnetBox.value.trim());
     this.hidePicker();
   }
 
-  getPicker() {
-    if (!this.picker) {
-      const picker = document.createElement('form');
-      this.picker = picker;
-      picker.classList.add('shapoconet_stamp_ui');
-      picker.id = 'shapoconet_stamp_popup';
-      picker.style.display = 'none';
-      picker.style.zIndex = '999';
+  getPickerWindow() {
+    if (!this.pickerWindow) {
+      const window = this.createPopup('form', 'shapoconet_stamp_picker');
+      this.pickerWindow = window;
       var html = '';
       html += `<div>\n`;
-      html += `<select id="shapoconet_stamp_popup_category" class="shapoconet_stamp_emoji"></select>`;
+      html += `<select id="shapoconet_stamp_picker_category" class="shapoconet_stamp_emoji"></select>`;
       html += `</div>\n`;
       html += `<div id="shapoconet_stamp_popup_list">\n`;
       html += `絵文字を読み込んでいます...\n`;
       html += `</div>\n`;
       html += `<div>\n`;
-      html += `<input type="text" id="shapoconet_stamp_popup_input" class="shapoconet_stamp_emoji" style="box-sizing: border-box; width: 100%;">\n`;
+      html += `<input type="text" id="shapoconet_stamp_popup_emoji" class="shapoconet_stamp_emoji" style="width: 32px; height: 20px; text-align: center; vertical-align: center;">`;
+      html += `<input type="text" id="shapoconet_stamp_popup_commnet" style="float: right; width: calc(100% - 32px - 30px); height: 20px; vertical-align: center;" placeholder="コメント (任意)">\n`;
       html += `</div>\n`;
       html += `<div style="text-align: right;">\n`;
       html += `<button type="button" id="shapoconet_stamp_picker_cancel">キャンセル</button>\n`;
-      html += `<button type="button" id="shapoconet_stamp_picker_send" disabled="disabled">送信</button>\n`;
+      html += `<button type="button" id="shapoconet_stamp_picker_send" disabled="disabled">スタンプ送信</button>\n`;
       html += `</div>\n`;
-      picker.innerHTML = html;
-      document.body.appendChild(picker);
-      this.categoryList = picker.querySelector('#shapoconet_stamp_popup_category');
-      this.emojiList = picker.querySelector('#shapoconet_stamp_popup_list');
-      this.inputBox = picker.querySelector('#shapoconet_stamp_popup_input');
-      this.sendButton = picker.querySelector('#shapoconet_stamp_picker_send');
+      window.innerHTML = html;
+      this.categoryList = window.querySelector('#shapoconet_stamp_picker_category');
+      this.emojiList = window.querySelector('#shapoconet_stamp_popup_list');
+      this.emojiBox = window.querySelector('#shapoconet_stamp_popup_emoji');
+      this.commnetBox = window.querySelector('#shapoconet_stamp_popup_commnet');
+      this.sendButton = window.querySelector('#shapoconet_stamp_picker_send');
       this.categoryList.addEventListener('change', evt => this.onStampCategoryChanged());
-      this.inputBox.addEventListener('change', evt => this.updateSendButtonStatus());
-      this.inputBox.addEventListener('keyup', evt => this.updateSendButtonStatus());
+      this.emojiBox.addEventListener('change', evt => this.validateEmojiAndComment());
+      this.emojiBox.addEventListener('keyup', evt => this.validateEmojiAndComment());
+      this.commnetBox.addEventListener('change', evt => this.validateEmojiAndComment());
+      this.commnetBox.addEventListener('keyup', evt => this.validateEmojiAndComment());
       this.sendButton.addEventListener('click', evt => this.onSendFromPicker());
-      picker.querySelector('#shapoconet_stamp_picker_cancel').addEventListener('click', evt => this.hidePicker());
+      window.querySelector('#shapoconet_stamp_picker_cancel').addEventListener('click', evt => this.hidePicker());
     }
 
     // document.body に appendChild してもすぐには表示サイズを取得できないので
     // アニメーションを要求する
-    window.requestAnimationFrame(t => { this.setPickerPos(); });
+    window.requestAnimationFrame(t => { 
+      this.fixPopupPos(this.addButton, this.pickerWindow);
+    });
 
     // emoji 辞書のロード
-    fetch(`${ShapocoNetStamp.API_URL_BASE}/emoji16.0.json?${this.urlPostfix}`)
+    fetch(`${ShapocoNetStamp.API_URL_BASE}/emoji16.0.json?${ShapocoNetStamp.URL_POSTFIX}`)
       .then(response => response.json())
       .then(data => { 
         this.emojiCategories = data;
@@ -276,27 +345,68 @@ class ShapocoNetStamp {
           });
           icat += 1;
         });
-        this.picker.querySelector('#shapoconet_stamp_popup_category').innerHTML = html;
+        this.pickerWindow.querySelector('#shapoconet_stamp_picker_category').innerHTML = html;
         this.onStampCategoryChanged();
-        this.setPickerPos();
+        this.fixPopupPos(this.addButton, this.pickerWindow);
       })
       .catch(error => {
         this.emojiList.innerHTML = '通信エラー';
       });
 
-    return this.picker;
+    return this.pickerWindow;
   }
 
-  updateSendButtonStatus() {
-    this.sendButton.disabled = !(this.inputBox.value in this.emojiDict);
+  getCommentWindow() {
+    if (!this.commentWindow) {
+      const window = this.createPopup('form', 'shapoconet_stamp_comment');
+      this.commentWindow = window;
+      var html = '';
+      html += `<div class="shapoconet_stamp_comment_title"></div>\n`;
+      html += `<div class="shapoconet_stamp_comment_list">\n`;
+      html += `コメント\n`;
+      html += `</div>\n`;
+      window.innerHTML = html;
+    }
+    return this.commentWindow;
   }
 
-  setPickerPos() {
-    const buttonRect = this.addButton.getBoundingClientRect();
+  createPopup(tag, id) {
+    const popup = document.createElement(tag);
+    popup.classList.add('shapoconet_stamp_ui');
+    popup.classList.add('shapoconet_stamp_popup');
+    popup.id = id;
+    popup.style.visibility = 'hidden';
+    popup.style.zIndex = '999';
+    document.body.appendChild(popup);
+    return popup;
+  }
+
+  validateEmojiAndComment() {
+    var emojiValid = this.emojiBox.value in this.emojiDict;
+    var commentValid = true;
+    const comment = this.commnetBox.value;
+    if (comment.length > this.commentRule.maxLength) {
+      commentValid = false;
+    }
+    else if (comment) {
+      this.commentRule.ngWords.forEach(ngWord => {
+        if (comment.includes(ngWord)) {
+          commentValid = false;
+          return;
+        }
+      });
+    }
+    this.emojiBox.style.background = emojiValid ? null : '#fcc';
+    this.commnetBox.style.background = commentValid ? null : '#fcc';
+    this.sendButton.disabled = !(emojiValid && commentValid);
+  }
+
+  fixPopupPos(button, popup) {
+    const buttonRect = button.getBoundingClientRect();
     const upperSpace = buttonRect.top;
     const lowerSpace = window.innerHeight - buttonRect.top + buttonRect.height;
 
-    const pickerRect = this.picker.getBoundingClientRect();
+    const pickerRect = popup.getBoundingClientRect();
     var left = buttonRect.left + (buttonRect.width - pickerRect.width) / 2;
     if (left < 5) {
       left = 5;
@@ -309,9 +419,9 @@ class ShapocoNetStamp {
       buttonRect.top + window.scrollY - pickerRect.height - 5 :
       buttonRect.bottom + window.scrollY + 5;
 
-    this.picker.style.position = 'position';
-    this.picker.style.left = left + 'px';
-    this.picker.style.top = top + 'px';
+    popup.style.position = 'position';
+    popup.style.left = left + 'px';
+    popup.style.top = top + 'px';
   }
 
   onStampCategoryChanged() {
@@ -337,18 +447,18 @@ class ShapocoNetStamp {
   }
 
   onStampSelected(link) {
-    this.inputBox.value = link.textContent;
-    this.updateSendButtonStatus();
+    this.emojiBox.value = link.textContent;
+    this.validateEmojiAndComment();
   }
 
   showMessage(success, message) {
     if (success) {
-      this.statusMsg.style.display = 'none';
+      this.statusMsg.style.visibility = 'hidden';
       this.statusMsg.innerHTML = '';
     }
     else {
       this.statusMsg.innerHTML = '⚠ ' + (message ? message : '不明なエラー');
-      this.statusMsg.style.display = 'inline-block';
+      this.statusMsg.style.visibility = 'visible';
     }
   }
 }
