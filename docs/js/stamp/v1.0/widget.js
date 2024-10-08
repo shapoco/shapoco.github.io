@@ -189,6 +189,9 @@ class ShapocoNetStamp {
     const emoji = button.querySelector('.shapoconet_stamp_emoji').innerHTML.trim();
     const remove = emoji in this.stamps ? this.stamps[emoji].sent : false;
     this.updateStamp(emoji, remove, '');
+    if (this.commentWindow) {
+      this.commentWindow.style.visibility = 'hidden';
+    }
   }
 
   onStampMouseOver(button) {
@@ -292,8 +295,8 @@ class ShapocoNetStamp {
 
   getPickerWindow() {
     if (!this.pickerWindow) {
-      const window = this.createPopup('form', 'shapoconet_stamp_picker');
-      this.pickerWindow = window;
+      const popup = this.createPopup('form', 'shapoconet_stamp_picker');
+      this.pickerWindow = popup;
       var html = '';
       html += `<div>\n`;
       html += `<select id="shapoconet_stamp_picker_category" class="shapoconet_stamp_emoji"></select>`;
@@ -309,19 +312,20 @@ class ShapocoNetStamp {
       html += `<button type="button" id="shapoconet_stamp_picker_cancel">キャンセル</button>\n`;
       html += `<button type="button" id="shapoconet_stamp_picker_send" disabled="disabled">スタンプ送信</button>\n`;
       html += `</div>\n`;
-      window.innerHTML = html;
-      this.categoryList = window.querySelector('#shapoconet_stamp_picker_category');
-      this.emojiList = window.querySelector('#shapoconet_stamp_popup_list');
-      this.emojiBox = window.querySelector('#shapoconet_stamp_popup_emoji');
-      this.commnetBox = window.querySelector('#shapoconet_stamp_popup_commnet');
-      this.sendButton = window.querySelector('#shapoconet_stamp_picker_send');
+      popup.innerHTML = html;
+      this.categoryList = popup.querySelector('#shapoconet_stamp_picker_category');
+      this.emojiList = popup.querySelector('#shapoconet_stamp_popup_list');
+      this.emojiBox = popup.querySelector('#shapoconet_stamp_popup_emoji');
+      this.commnetBox = popup.querySelector('#shapoconet_stamp_popup_commnet');
+      this.sendButton = popup.querySelector('#shapoconet_stamp_picker_send');
       this.categoryList.addEventListener('change', evt => this.onStampCategoryChanged());
       this.emojiBox.addEventListener('change', evt => this.validateEmojiAndComment());
-      this.emojiBox.addEventListener('keyup', evt => this.validateEmojiAndComment());
+      this.emojiBox.addEventListener('keyup', evt => this.onPickerKeyUp(evt));
       this.commnetBox.addEventListener('change', evt => this.validateEmojiAndComment());
-      this.commnetBox.addEventListener('keyup', evt => this.validateEmojiAndComment());
+      this.commnetBox.addEventListener('keyup', evt => this.onPickerKeyUp(evt));
       this.sendButton.addEventListener('click', evt => this.onSendFromPicker());
-      window.querySelector('#shapoconet_stamp_picker_cancel').addEventListener('click', evt => this.hidePicker());
+      popup.onsubmit = 'return false;';
+      popup.querySelector('#shapoconet_stamp_picker_cancel').addEventListener('click', evt => this.hidePicker());
     }
 
     // document.body に appendChild してもすぐには表示サイズを取得できないので
@@ -381,6 +385,13 @@ class ShapocoNetStamp {
     return popup;
   }
 
+  onPickerKeyUp(evt) {
+    const valid = this.validateEmojiAndComment();
+    if (evt.keyCode == 13) { // Enter
+      if (valid) this.onSendFromPicker();
+    }
+  }
+
   validateEmojiAndComment() {
     var emojiValid = this.emojiBox.value in this.emojiDict;
     var commentValid = true;
@@ -398,7 +409,9 @@ class ShapocoNetStamp {
     }
     this.emojiBox.style.background = emojiValid ? null : '#fcc';
     this.commnetBox.style.background = commentValid ? null : '#fcc';
-    this.sendButton.disabled = !(emojiValid && commentValid);
+    const valid = emojiValid && commentValid;
+    this.sendButton.disabled = !valid;
+    return valid;
   }
 
   fixPopupPos(button, popup) {
