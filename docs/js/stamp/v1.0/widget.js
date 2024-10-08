@@ -206,7 +206,7 @@ class ShapocoNetStamp {
       html += '<ul>';
       this.comments.forEach(entry => {
         if (entry.emoji == emoji) {
-          html += `<li>${entry.comment}</li>`
+          html += `<li>${this.escapeForHtml(entry.comment)}</li>`
           numComments += 1;
         }
       });
@@ -479,6 +479,18 @@ class ShapocoNetStamp {
       this.statusMsg.style.visibility = 'visible';
     }
   }
+  
+  escapeForHtml(s) {
+    return s
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#39;')
+      .replaceAll(" ", '&nbsp;')
+      .replaceAll("　", '&#x3000;');
+  }
+
 }
 
 const shapocoNetStamp = new ShapocoNetStamp();
