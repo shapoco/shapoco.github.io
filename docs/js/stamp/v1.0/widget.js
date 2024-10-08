@@ -404,6 +404,9 @@ class ShapocoNetStamp {
     if (comment.length > this.commentRule.maxLength) {
       commentValid = false;
     }
+    else if (/<\/?\w+>/.test(comment)) {
+      commentValid = false;
+    }
     else if (comment) {
       this.commentRule.ngWords.forEach(ngWord => {
         if (comment.includes(ngWord)) {
