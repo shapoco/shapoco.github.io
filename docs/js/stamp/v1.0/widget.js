@@ -42,6 +42,7 @@ class ShapocoNetStamp {
     
     this.stampButtonList = document.createElement('span');
     this.stampButtonList.id = 'shapoconet_stamp_stamp_list';
+    this.stampButtonList.innerHTML = 'スタンプを読み込んでいます...&nbsp;';
     this.container.appendChild(this.stampButtonList);
 
     this.addButton = document.createElement('button');
@@ -93,11 +94,15 @@ class ShapocoNetStamp {
         if (this.isDebugMode) console.log("JSON loaded.");
         this.onResourceLoaded(this);
       })
-      .catch(error => { console.error('Loading JSON failed:', error); });    
+      .catch(error => {
+        this.stampButtonList.innerHTML = '';
+        this.showMessage(false, 'スタンプを読み込めませんでした');
+      });
   }
 
   onResourceLoaded() {
     if (this.cssLoaded && this.jsonLoaded) {
+      this.stampButtonList.innerHTML = '';
       this.updateButtons(true);
     }
   }
@@ -189,7 +194,9 @@ class ShapocoNetStamp {
           this.updateButtons(false);
         }
       })
-      .catch(error => { console.error('Loading JSON failed:', error); });
+      .catch(error => {
+        this.showMessage(false, '通信エラー');
+      });
   }
   
   fetchApi(params) {
@@ -228,6 +235,7 @@ class ShapocoNetStamp {
       html += `<select id="shapoconet_stamp_popup_category" class="shapoconet_stamp_emoji"></select>`;
       html += `</div>\n`;
       html += `<div id="shapoconet_stamp_popup_list">\n`;
+      html += `絵文字を読み込んでいます...\n`;
       html += `</div>\n`;
       html += `<div>\n`;
       html += `<input type="text" id="shapoconet_stamp_popup_input" class="shapoconet_stamp_emoji" style="box-sizing: border-box; width: 100%;">\n`;
@@ -272,7 +280,9 @@ class ShapocoNetStamp {
         this.onStampCategoryChanged();
         this.setPickerPos();
       })
-      .catch(error => { console.error('Loading JSON failed:', error); });
+      .catch(error => {
+        this.emojiList.innerHTML = '通信エラー';
+      });
 
     return this.picker;
   }
