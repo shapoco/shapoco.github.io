@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0">
+
+    <meta name="robots" content="noindex">
+    <meta name="Hatena::Bookmark" content="nocomment" />
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-BMDGFGR0Z4"></script>
+    <script>
+      var remotHost = window.location.hostname;
+      if (remotHost == "localhost") {
+        console.log(`Google Analytics disabled on: '${remotHost}'`);
+      }
+      else {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-BMDGFGR0Z4');
+      }
+    </script>
+
+    <link rel="icon" href="/likespam/favicon192.png" sizes="192x192">
+    <link rel="apple-touch-icon" href="/likespam/apple-touch-icon180.png" sizes="180x180">
+    <link rel="shortcut icon" href="/likespam/favicon48.ico">
+
+    <title>既読状態の移行 | いいねスパム一覧</title>
+    <script src="./index.js?20241013002800"></script>
+    <link href="./style.css?20241013002800" rel="stylesheet" type="text/css">
+  </head>
+
+  <body>
+    <div class="header"><img src="cover.png"></div>
+    <div class="author">
+      管理者: <a href="https://x.com/syego" target="_blank">@syego</a>
+    </div>
+    <p class="menu_wrapper" id="menu"></p>
+
+    <div style="text-align: center;">
+      <h1>いいねスパム一覧</h1>
+      <p>
+        「いいねスパム一覧」はサイトを移転しました。
+      </p>
+      <p>
+        <code>shapoco.github.io/likespam/</code><br>
+        ↓<br>
+        <code>syego.jp/likespam/</code>
+      </p>
+      <hr>
+      
+      <h2>既読状態の移行</h2>
+      <div id="copy_form" style="display: none;">
+        <p>
+          以下のボタンをクリックすると、スパムの既読状態を旧サイトから新サイトへコピーします。
+        </p>
+        <form method="post" action="https://syego.jp/likespam/import-read-flags.php">
+          <input id="read_indexes" name="read_indexes" type="text" hidden>
+          <input id="touched_indexes" name="touched_indexes" type="text" hidden>
+          <button type="submit" style="padding: 5px 20px; font-size: 150%; font-weight: bold;">コピー実行</button>
+        </form>
+      </div>
+      <div id="no_read_flags" style="display: none;">
+        <p>
+          <br>
+          <img src="./icon24_info.png"><br>
+          既読データはありません。<br>
+          コピーは不要です。<br>
+          <br>
+        </p>
+      </div>
+      <script>
+        const read_indexes = localStorage.getItem(LKSP_STORAGE_KEY_READS);
+        const touched_indexes = localStorage.getItem(LKSP_STORAGE_KEY_TOUCHED);
+        if (read_indexes) {
+          document.querySelector('#read_indexes').value = read_indexes;
+          document.querySelector('#touched_indexes').value = touched_indexes;
+          document.querySelector('#copy_form').style.display = 'block';
+        }
+        else {
+          document.querySelector('#no_read_flags').style.display = 'block';
+        }
+      </script>
+      <hr>
+      <p>
+        <a href="https://syego.jp/likespam">コピーせずに新サイトへ移動する</a>
+      </p>
+      <hr>
+    </div>
+  </body>
+
+</html>

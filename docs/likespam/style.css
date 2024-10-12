@@ -1,0 +1,266 @@
+body {
+  margin: 0px;
+  padding: 0px;
+  background: #eee;
+
+  /* iOS の Safari で表内の white-space: nowrap な要素の文字サイズが大きくなってしまう問題の対処 */
+  -webkit-text-size-adjust: 100%;
+}
+
+body, input, textarea, th, td {
+  font-size: 10pt;
+  font-family: メイリオ, Meiryo, sans-serif;
+}
+
+input[type="checkbox"],
+input[type="radio"] {
+  vertical-align: middle;
+}
+
+div.header {
+  background: #404040;
+  text-align: center;
+}
+
+div.author {
+  position: absolute;
+  right: 0px;
+  top: 0px;
+  color: #ccc;
+  padding: 2px;
+}
+div.author a { color: #ccc !important; }
+
+hr {
+  border-style: solid none none none;
+  border-color: #444;
+  border-width: 1px;
+  margin: 10px 20px;
+}
+
+form {
+  margin: 0px;
+  padding: 0px;
+}
+
+p, table, h1, h2, h3 {
+  margin: 10px 20px;
+  padding: 0px;
+}
+
+ul, ol {
+  margin: 10px 20px;
+  padding: 0px 0px 0px 20px;
+}
+
+ul ul, ul ol, ol ul, ol ol {
+  margin: 2px 0px;
+  padding: 0px 0px 0px 20px;
+}
+
+h1 { border-bottom: solid 1px #444; }
+h2 { border-bottom: solid 1px #888; }
+
+div.note, div.warning {
+  margin: 10px 20px;
+  padding: 0px 0px 0px 20px;
+  border-style: solid;
+  border-width: 1px;
+  border-radius: 5px;
+  min-height: calc(24px + 20px);
+}
+
+div.note {
+  border-color: #68a;
+  background: #e0f0ff;
+  background-image: url(./icon24_info.png);
+  background-repeat: no-repeat;
+  background-position: 10px 10px;
+}
+
+div.warning {
+  border-color: #ca8;
+  background: #ffe;
+  background-image: url(./icon24_warn.png);
+  background-repeat: no-repeat;
+  background-position: 10px 10px;
+}
+
+form.filter_wrapper {
+  margin: 10px 20px;
+  padding: 0px;
+  border: solid 1px #ccc;
+  border-radius: 5px;
+  background: #f8f8f8;
+}
+
+
+form.filter_wrapper p,
+form.filter_wrapper ul,
+form.filter_wrapper ol,
+form.filter_wrapper table {
+  margin: 10px;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+table th,
+table td {
+  border: solid 1px #888;
+  padding: 0.2ex 0.5em;
+}
+
+table th {
+  background: #ddd;
+}
+
+table td {
+	background: #fff;
+}
+
+tr.frozen td {
+  background: #ccc !important;
+}
+
+a:link { color: #06c; }
+a:visited { color: #048; }
+a:hover { color: #06c; background: #cef; }
+a:active { color: #06c; background: #cef; }
+
+tr.frozen td { color: #666; }
+tr.frozen td a { color: #666 !important; }
+tr.frozen_new td { background: #8ff !important; }
+del.frozen_new {
+  background: #8ff !important;
+  border-radius: 5px;
+  padding: 0px 3px;
+}
+
+tr.rpspam td { background: #aca; }
+span.rpspam {
+  background: #aca;
+  border-radius: 5px;
+  padding: 0px 3px;
+}
+
+tr.sakura td { background: #fce; }
+span.sakura {
+  background: #fce;
+  border-radius: 5px;
+  padding: 0px 3px;
+}
+
+tr.smoker td { background: #ccf; }
+span.smoker {
+  background: #ccf;
+  border-radius: 5px;
+  padding: 0px 3px;
+}
+
+code {
+  font-family: 'Consolas', monospace;
+  background: #fff;
+  color: #040;
+  border-radius: 5px;
+  padding: 0px 5px;
+}
+
+strong { color: #c00; font-weight: bold; }
+
+ul#query_list {
+  margin: 10px 20px;
+  padding: 0px;
+}
+
+ul#query_list li {
+  display: block;
+  margin: 0px;
+  padding: 0px 0px 10px 0px;
+}
+
+ul#query_list li.frozen {
+  background: #ccc;
+}
+
+ul#query_list li.frozen a:link { color: #666; text-decoration: line-through; }
+ul#query_list li.frozen a:visited { color: #666; text-decoration: line-through; }
+ul#query_list li.frozen a:hover { color: #666; text-decoration: line-through; }
+ul#query_list li.frozen a:active { color: #666; text-decoration: line-through; }
+
+.read_state {
+  color: #c44 !important;
+  padding: 0px 3px;
+}
+.read_state_read {
+  color: #484 !important;
+  padding: 0px 3px;
+}
+.read_state_touched {
+  background: #ffc !important;
+  border-radius: 5px;
+  padding: 0px 3px;
+}
+
+del {
+  background: #ccc; 
+  color: #666;
+  border-radius: 5px;
+  padding: 0px 3px;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+textarea {
+  max-width: 100%;
+}
+
+img.profile_image {
+  width: 48px;
+  height: 48px;
+  border-radius: 999px;
+}
+
+.menu_wrapper {
+  line-height: 25pt;
+}
+
+.menu_item {
+  border: solid 1px #ccc;
+  border-radius: 5px;
+  background: #fff;
+  padding: 3px 10px;
+}
+
+.menu_selected {
+  font-weight: bold;
+  background: transparent;
+  color: #000;
+}
+
+.menu_item { text-decoration: none !important; }
+
+.gray {
+  color: #666;
+  font-size: smaller;
+  font-weight: normal;
+}
+
+.nowrap {
+  white-space: nowrap;
+}
+
+#spam_table th,
+#spam_table td {
+  white-space: nowrap;
+}
+
+@media(min-width:640px){
+  .for_mobile{
+    display: none !important;
+  }
+}
