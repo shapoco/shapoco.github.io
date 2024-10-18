@@ -200,31 +200,28 @@ class ShapocoNetStamp {
     const popup = this.getCommentWindow();
     const pickerShown = this.pickerWindow && this.pickerWindow.style.visibility == 'visible';
     var numComments = 0;
-    if (popup.style.visibility != 'visible' && !pickerShown) {
-      const list = popup.querySelector('.shapoconet_stamp_comment_list');
-      var html = '';
-      html += '<ul>';
-      this.comments.forEach(entry => {
-        if (entry.emoji == emoji) {
-          html += `<li>${this.escapeForHtml(entry.comment)}</li>`
-          numComments += 1;
-        }
-      });
-      html += '</ul>';
-      list.innerHTML = html;
-      popup.style.visibility = 'visible';
-      window.requestAnimationFrame(t => { 
-        this.fixPopupPos(button, popup);
-      });
-      const title = popup.querySelector('.shapoconet_stamp_comment_title');
-      if (numComments > 0) {
+
+    const comments = this.comments.filter(entry => entry.emoji == emoji);
+
+    if (comments.length > 0 && !pickerShown) {
+      if (popup.style.visibility != 'visible') {
+        const list = popup.querySelector('.shapoconet_stamp_comment_list');
+        var html = '';
+        html += '<ul>';
+        html += comments.map(entry => `<li>${this.escapeForHtml(entry.comment)}</li>`).join();
+        html += '</ul>';
+        list.innerHTML = html;
+        popup.style.visibility = 'visible';
+        window.requestAnimationFrame(t => { 
+          this.fixPopupPos(button, popup);
+        });
+        const title = popup.querySelector('.shapoconet_stamp_comment_title');
         list.style.display = 'block';
-        title.innerHTML =  `${numComments} 件のコメント`;
+        title.innerHTML =  `${comments.length} 件のコメント`;
       }
-      else {
-        list.style.display = 'none';
-        title.innerHTML = '(コメントなし)';
-      }
+    }
+    else {
+      popup.style.visibility = 'hidden';
     }
   }
 
