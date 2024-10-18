@@ -208,7 +208,7 @@ class ShapocoNetStamp {
         const list = popup.querySelector('.shapoconet_stamp_comment_list');
         var html = '';
         html += '<ul>';
-        html += comments.map(entry => `<li>${this.escapeForHtml(entry.comment)}</li>`).join();
+        html += comments.map(entry => `<li>${this.escapeForHtml(entry.comment)}</li>`).join('');
         html += '</ul>';
         list.innerHTML = html;
         popup.style.visibility = 'visible';
