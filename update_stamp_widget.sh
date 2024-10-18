@@ -27,7 +27,7 @@ set +x
 for path in $(find "${OUT_DIR}" -type f -name "*.html"); do
   if grep -e "/stamp/v[0-9]\+\.[0-9]\+/widget\.js" --quiet "${path}"; then
     echo "Updating: '${path}'"
-    #sed -i "${path}" -e "s:/stamp/v[0-9]\+\.[0-9]\+/widget\.js\(\?[0-9]\+\):/stamp/${VERSION}/widget\.js?${url_postfix}:g"
+    sed -i "${path}" -e "s:/stamp/v[0-9]\+\.[0-9]\+/widget\.js\(\?[0-9]\+\):/stamp/${VERSION}/widget\.js?${url_postfix}:g"
     git add "${path}"
   fi
 done
