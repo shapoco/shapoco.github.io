@@ -1,10 +1,20 @@
 
 class ShapocoNetStamp {
-  static API_URL_BASE = 'https://shapoco.net/stamp/v1';
-  static URL_POSTFIX = '20241009000200';
+  static API_VERSION = 1;
+  static LOCALHOST_PATTERN = /^(http:\/\/localhost:\d+)\//;
+  static DEBUG_MODE = ShapocoNetStamp.LOCALHOST_PATTERN.test(window.location.href);
+  static API_URL_BASE = ShapocoNetStamp.DEBUG_MODE ?
+    `${window.location.href.match(ShapocoNetStamp.LOCALHOST_PATTERN)[1]}/stamp/v${ShapocoNetStamp.API_VERSION}` :
+    `https://shapoco.net/stamp/v${ShapocoNetStamp.API_VERSION}`;
+  static URL_POSTFIX = '20241019012000';
   static COOKIE_KEY = 'ShapocoNetStamp_clientId';
 
   constructor() {
+    if (ShapocoNetStamp.DEBUG_MODE) {
+      console.log('--------- DEBUG MODE --------');
+      console.log(`API_URL_BASE = ${ShapocoNetStamp.API_URL_BASE}`);
+    }
+
     this.cssLoaded = false;
     this.jsonLoaded = false;
     
@@ -23,7 +33,6 @@ class ShapocoNetStamp {
     this.addButton = null;
     this.statusMsg = null;
     this.location = window.location.href;
-    this.isDebugMode = this.location.startsWith('http://localhost:');
     this.pickerWindow = null;
     this.commentWindow = null;
     this.categoryList = null;
@@ -37,7 +46,7 @@ class ShapocoNetStamp {
       const kv = entry.trim().split('=');
       if (kv[0].trim() == ShapocoNetStamp.COOKIE_KEY) {
         this.clientId = decodeURIComponent(kv[1].trim());
-        if (this.isDebugMode) {
+        if (ShapocoNetStamp.DEBUG_MODE) {
           console.log(`clientId=${this.clientId}`);
         }
       }
@@ -77,7 +86,7 @@ class ShapocoNetStamp {
     document.body.append(link);
     link.addEventListener('load', evt => {
       this.cssLoaded = true;
-      if (this.isDebugMode) console.log("CSS loaded.");
+      if (ShapocoNetStamp.DEBUG_MODE) console.log("CSS loaded.");
       this.onResourceLoaded(this);
     });
 
@@ -91,12 +100,11 @@ class ShapocoNetStamp {
     var params = { s: this.location};
     if (this.clientId) params['i'] = this.clientId;
     this.fetchApi(params)
-      .then(resp => resp.json())
       .then(resp => { 
-        if (this.isDebugMode) console.log(resp);
+        if (ShapocoNetStamp.DEBUG_MODE) console.log(resp);
         this.procApiResponse(resp);
         this.jsonLoaded = true;
-        if (this.isDebugMode) console.log("JSON loaded.");
+        if (ShapocoNetStamp.DEBUG_MODE) console.log("JSON loaded.");
         this.onResourceLoaded(this);
       })
       .catch(error => {
@@ -255,9 +263,8 @@ class ShapocoNetStamp {
     if (this.clientId) params['i'] = this.clientId;
     if (comment) params['c'] = comment;
     this.fetchApi(params)
-      .then(resp => resp.json())
       .then(resp => { 
-        if (this.isDebugMode) console.log(resp);
+        if (ShapocoNetStamp.DEBUG_MODE) console.log(resp);
         this.procApiResponse(resp);
         if (resp.success) {
           if (this.emojiBox) this.emojiBox.value = '';
@@ -272,11 +279,27 @@ class ShapocoNetStamp {
   }
   
   fetchApi(params) {
+    this.setButtonEnables(false);
     const encodedParams = Object.keys(params)
       .map(key => `${key}=${encodeURIComponent(params[key])}`).join('&');
     const url = `${ShapocoNetStamp.API_URL_BASE}/api.php?${encodedParams}`;
-    if (this.isDebugMode) console.log(url);
-    return fetch(url);
+    if (ShapocoNetStamp.DEBUG_MODE) console.log(url);
+    return fetch(url).then(resp => {
+      this.setButtonEnables(true);
+      return resp.json();
+    });
+  }
+
+  setButtonEnables(enable) {
+    const buttons = this.stampButtonList.querySelectorAll('.shapoconet_stamp_stamp');
+    const cursor = enable ? 'pointer' : 'wait';
+    buttons.forEach(button => {
+      console.log(button.textContent + ' : ' + enable);
+      button.disabled = !enable;
+      button.style.cursor = cursor;
+    });
+    this.addButton.disabled = !enable;
+    this.addButton.style.cursor = cursor;
   }
 
   showPicker() {
