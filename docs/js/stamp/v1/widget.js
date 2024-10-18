@@ -1,6 +1,6 @@
 
 class ShapocoNetStamp {
-  static API_URL_BASE = 'https://shapoco.net/stamp/v1.0';
+  static API_URL_BASE = 'https://shapoco.net/stamp/v1';
   static URL_POSTFIX = '20241009000200';
   static COOKIE_KEY = 'ShapocoNetStamp_clientId';
 
