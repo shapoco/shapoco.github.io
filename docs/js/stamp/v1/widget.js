@@ -200,20 +200,22 @@ class ShapocoNetStamp {
 
     if (first) {
       var numShown = 0;
-      //numShown += this.stampButtonList.childNodes.filter(button => button.classList.contains('shpcstamp_sent')).length;
+      // 自分が送ったスタンプは常に表示
       this.stampButtonList.childNodes.forEach(button => {
         if (button.classList.contains('shpcstamp_sent')) {
           numShown += 1;
           button.style.display = 'inline-block';
         }
       });
+      // 自分が送ったスタンプとそれ以外を合わせて最大10種類まで表示
       this.stampButtonList.childNodes.forEach(button => {
         if (!button.classList.contains('shpcstamp_sent')) {
           button.style.display = numShown < 10 ? 'inline-block' : 'none';
           numShown += 1;
         }
       });
-      if (numShown >= 10) {
+      if (numShown > 10) {
+        // スタンプが10種類を超えた場合は「・・・」ボタンを表示する
         this.expandButton.style.display = 'inline-block';
       }
     }
