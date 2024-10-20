@@ -6,7 +6,7 @@ class ShapocoNetStamp {
   static API_URL_BASE = ShapocoNetStamp.DEBUG_MODE ?
     `${window.location.href.match(ShapocoNetStamp.LOCALHOST_PATTERN)[1]}/stamp/v${ShapocoNetStamp.API_VERSION}` :
     `https://shapoco.net/stamp/v${ShapocoNetStamp.API_VERSION}`;
-  static URL_POSTFIX = '20241020160600';
+  static URL_POSTFIX = '20241020182300';
   static COOKIE_KEY = 'ShapocoNetStamp_clientId';
 
   constructor() {
@@ -159,7 +159,7 @@ class ShapocoNetStamp {
     // 既にあるボタンを更新する
     const buttons = this.stampButtonList.querySelectorAll('.shpcstamp_stamp');
     buttons.forEach(button => {
-      const emoji = button.querySelector('.shpcstamp_emoji').innerHTML.trim();
+      const emoji = button.dataset.emoji;
       var numStamp = 0;
       var sent = false;
       if (emoji in tmpStamps) {
@@ -189,8 +189,9 @@ class ShapocoNetStamp {
       button.addEventListener('mouseover', evt => this.onStampMouseOver(button));
       button.addEventListener('mouseleave', evt => this.onStampMouseLeave(button));
       button.addEventListener('wheel', evt => this.onStampWheel(button, evt));
+      button.dataset.emoji = emoji;
       button.innerHTML =
-        `<span class="shpcstamp_emoji">${emoji}</span>` +
+        `<span class="shpcstamp_emoji">${this.replaceCustomEmoji(emoji)}</span>` +
         `<span class="shpcstamp_num_comment" style="background: url(${ShapocoNetStamp.API_URL_BASE}/images/with_comment.svg);"></span>` +
         `<span class="shpcstamp_num_stamp"></span>`;
       const numComment = this.comments.filter(comment => comment.emoji == emoji).length;
@@ -239,7 +240,7 @@ class ShapocoNetStamp {
   }
   
   onStampClicked(button) {
-    const emoji = button.querySelector('.shpcstamp_emoji').innerHTML.trim();
+    const emoji = button.dataset.emoji;
     const remove = emoji in this.stamps ? this.stamps[emoji].sent : false;
     this.updateStamp(emoji, remove, '');
     if (this.commentWindow) {
@@ -362,6 +363,22 @@ class ShapocoNetStamp {
     this.getPickerWindow().style.visibility = 'hidden';
   }
 
+  getCustonEmojiUrl(s) {
+    const m = s.match(/^:(\w+):$/);
+    if (m) s = m[1];
+    return `${ShapocoNetStamp.API_URL_BASE}/images/emoji64/${s}.png`;
+  }
+
+  replaceCustomEmoji(s) {
+    const m = s.match(/^:(\w+):$/);
+    if (m) {
+      return `<img class="shpcstamp_custom_emoji" src="${this.getCustonEmojiUrl(m[1])}">`;
+    }
+    else {
+      return s;
+    }
+  }
+
   onSendFromPicker() {
     this.updateStamp(this.emojiBox.value, false, this.commnetBox.value.trim());
     this.hidePicker();
@@ -411,16 +428,22 @@ class ShapocoNetStamp {
     });
 
     // emoji 辞書のロード
-    fetch(`${ShapocoNetStamp.API_URL_BASE}/emoji16.0.json?${ShapocoNetStamp.URL_POSTFIX}`)
+    fetch(`${ShapocoNetStamp.API_URL_BASE}/emoji.json?${ShapocoNetStamp.URL_POSTFIX}`)
       .then(response => response.json())
       .then(data => { 
         this.emojiCategories = data;
         var html = '';
         var icat = 0;
         html += `<option value="-1">⭐ 最近使われたスタンプ</option>`;
-        data.forEach(cat => {
-          html += `<option value="${icat}">${cat.items[0].emoji} ${cat.name}</option>`;
-          cat.items.forEach(item => {
+        data.forEach(cate => {
+          const emoji = cate.items[0].emoji;
+          if (emoji.startsWith(':')) {
+            html += `<option value="${icat}">${cate.name}</option>`;
+          }
+          else {
+            html += `<option value="${icat}">${emoji} ${cate.name}</option>`;
+          }
+          cate.items.forEach(item => {
             this.emojiDict[item.emoji] = item;
           });
           icat += 1;
@@ -532,7 +555,8 @@ class ShapocoNetStamp {
       link.href = 'javascript:void(0)';
       link.classList.add('shpcstamp_emoji');
       link.title = item.name;
-      link.innerHTML = item.emoji;
+      link.dataset.emoji = item.emoji;
+      link.innerHTML = this.replaceCustomEmoji(item.emoji);
       link.addEventListener('click', evt=>this.onStampSelected(link));
       this.emojiList.appendChild(link);
     });
@@ -540,7 +564,7 @@ class ShapocoNetStamp {
   }
 
   onStampSelected(link) {
-    this.emojiBox.value = link.textContent;
+    this.emojiBox.value = link.dataset.emoji;
     this.validateEmojiAndComment();
   }
 
