@@ -6,7 +6,7 @@ class ShapocoNetStamp {
   static API_URL_BASE = ShapocoNetStamp.DEBUG_MODE ?
     `${window.location.href.match(ShapocoNetStamp.LOCALHOST_PATTERN)[1]}/stamp/v${ShapocoNetStamp.API_VERSION}` :
     `https://shapoco.net/stamp/v${ShapocoNetStamp.API_VERSION}`;
-  static URL_POSTFIX = '20241020182300';
+  static URL_POSTFIX = '20241021001300';
   static COOKIE_KEY = 'ShapocoNetStamp_clientId';
 
   constructor() {
@@ -23,7 +23,8 @@ class ShapocoNetStamp {
     this.history = [];
     this.commentRule = {
       maxLength: 64,
-      ngWords: ['http://', 'https://', 'ftp://']
+      ngWords: ['http://', 'https://', 'ftp://'],
+      narrowCharPattern: '^[\\x00-\\x7e]$',
     };
     this.emojiCategories = [];
     this.emojiDict = {};
@@ -44,6 +45,7 @@ class ShapocoNetStamp {
     this.emojiList = null;
     this.emojiBox = null;
     this.commnetBox = null;
+    this.commentLenGuage = null;
     this.sendButton = null;
     this.clientId = null;
 
@@ -144,12 +146,33 @@ class ShapocoNetStamp {
       this.history = resp.history;
       this.comments.reverse(); // 新着順にする
     }
+
+    var clientIdMaxAge = 86400;
+    if (resp.clientIdMaxAge) {
+      clientIdMaxAge = Math.max(3600, Math.min(86400 * 365 * 3, Math.round(resp.clientIdMaxAge)));
+    }
+    else {
+      console.warn('resp.clientIdMaxAge not found.');
+    }
+
     if (resp.clientId) {
       this.clientId = resp.clientId;
-      document.cookie = `${ShapocoNetStamp.COOKIE_KEY}=${encodeURIComponent(this.clientId)}; Path=/; max-age=${86400 * 365}; SameSite=Lax; Secure`;
+      document.cookie =
+        `${ShapocoNetStamp.COOKIE_KEY}=${encodeURIComponent(this.clientId)}; ` +
+        `Path=/; ` +
+        `max-age=${clientIdMaxAge}; ` +
+        `SameSite=Lax; ` +
+        `Secure`;
     }
+    else {
+      console.warn('resp.clientId not found.');
+    }
+
     if (resp.commentRule) {
       this.commentRule = resp.commentRule;
+    }
+    else {
+      console.warn('resp.commentRule not found.');
     }
   }
 
@@ -249,7 +272,7 @@ class ShapocoNetStamp {
   }
 
   onStampMouseOver(button) {
-    const emoji = button.querySelector('.shpcstamp_emoji').innerHTML.trim();
+    const emoji = button.dataset.emoji;
     const popup = this.getCommentWindow();
     const pickerShown = this.pickerWindow && this.pickerWindow.style.visibility == 'visible';
     var numComments = 0;
@@ -400,6 +423,7 @@ class ShapocoNetStamp {
       html += `</div>\n`;
       html += `<div>\n`;
       html += `<input type="text" id="shpcstamp_popup_commnet" style="width: 100%;" placeholder="コメント (任意, 公開されます)">\n`;
+      html += `<div id="shpcstamp_comment_len_outer"><div id="shpcstamp_comment_len_inner" style="width: 0px;"></div></div>\n`;
       html += `</div>\n`;
       html += `<div style="text-align: right;">\n`;
       html += `<button type="button" id="shpcstamp_picker_cancel">キャンセル</button>\n`;
@@ -410,6 +434,7 @@ class ShapocoNetStamp {
       this.emojiList = popup.querySelector('#shpcstamp_popup_list');
       this.emojiBox = popup.querySelector('#shpcstamp_popup_emoji');
       this.commnetBox = popup.querySelector('#shpcstamp_popup_commnet');
+      this.commentLenGuage = popup.querySelector('#shpcstamp_comment_len_inner');
       this.sendButton = popup.querySelector('#shpcstamp_picker_send');
       this.categoryList.addEventListener('change', evt => this.onStampCategoryChanged());
       this.emojiBox.addEventListener('change', evt => this.validateEmojiAndComment());
@@ -496,7 +521,9 @@ class ShapocoNetStamp {
     var emojiValid = this.emojiBox.value in this.emojiDict;
     var commentValid = true;
     const comment = this.commnetBox.value;
-    if (comment.length > this.commentRule.maxLength) {
+    const commentLen = this.calcCommentLength(comment);
+    const commentLenPercent = 100 * commentLen / this.commentRule.maxLength;
+    if (commentLenPercent > 100) {
       commentValid = false;
     }
     else if (/<\/?\w+>/.test(comment)) {
@@ -514,6 +541,15 @@ class ShapocoNetStamp {
     this.commnetBox.style.background = commentValid ? null : '#fcc';
     const valid = emojiValid && commentValid;
     this.sendButton.disabled = !valid;
+
+    if (commentLenPercent <= 100) {
+      this.commentLenGuage.style.width = Math.ceil(commentLenPercent * 10) / 10 + '%';
+      this.commentLenGuage.style.background = null;
+    }
+    else {
+      this.commentLenGuage.style.width = '100%';
+      this.commentLenGuage.style.background = '#f00';
+    }
     return valid;
   }
 
@@ -588,6 +624,16 @@ class ShapocoNetStamp {
       .replaceAll("'", '&#39;')
       .replaceAll(" ", '&nbsp;')
       .replaceAll("　", '&#x3000;');
+  }
+
+  calcCommentLength(s) {
+    const narrow = new RegExp(this.commentRule.narrowCharPattern);
+    var len = 0;
+    const n = s.length;
+    for (var i = 0; i < n; i++) {
+        len += narrow.test(s[i]) ? 1 : 2;
+    }
+    return len;
   }
 
 }
