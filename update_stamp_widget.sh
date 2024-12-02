@@ -6,7 +6,7 @@ WORK_DIR=$(pwd)
 TMP_DIR="${WORK_DIR}/.tmp"
 OUT_DIR="${WORK_DIR}/docs"
 REPO_NAME="stamps-php"
-VERSION="v1.0"
+VERSION="v1"
 
 ./check_repos_is_clean.sh
 
@@ -19,7 +19,7 @@ pushd "${TMP_DIR}"
   fi
 popd
 
-cp "${TMP_DIR}/stamps-php/stamp/${VERSION}/widget.js" "${OUT_DIR}/js/stamp/${VERSION}/."
+cp "${TMP_DIR}/stamps-php/public/www/stamp/${VERSION}/widget.js" "${OUT_DIR}/js/stamp/${VERSION}/."
 
 url_postfix=$(date +"%Y%m%d%H%M%S")
 

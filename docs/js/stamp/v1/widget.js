@@ -5,7 +5,7 @@ class ShapocoNetStamp {
   static DEBUG_MODE = ShapocoNetStamp.LOCALHOST_PATTERN.test(window.location.href);
   static API_URL_BASE = ShapocoNetStamp.DEBUG_MODE ?
     `${window.location.href.match(ShapocoNetStamp.LOCALHOST_PATTERN)[1]}/stamp/v${ShapocoNetStamp.API_VERSION}` :
-    `https://shapoco.net/stamp/v${ShapocoNetStamp.API_VERSION}`;
+    `https://www.shapoco.net/stamp/v${ShapocoNetStamp.API_VERSION}`;
   static URL_POSTFIX = '20241021001300';
   static COOKIE_KEY = 'ShapocoNetStamp_clientId';
 
@@ -112,7 +112,6 @@ class ShapocoNetStamp {
       params.push(`i=${encodeURIComponent(this.clientId)}`);
     }
     params.push(`s=${encodeURIComponent(this.location)}`);
-    fetch(`${ShapocoNetStamp.API_URL_BASE}/api.php?${params.join('&')}`)
     
     var params = { s: this.location};
     if (this.clientId) params['i'] = this.clientId;
