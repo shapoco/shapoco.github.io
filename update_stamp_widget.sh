@@ -13,7 +13,9 @@ VERSION="v1"
 mkdir -p "${TMP_DIR}"
 pushd "${TMP_DIR}"
   if [ -e "${REPO_NAME}" ]; then
-    git pull
+    pushd ${REPO_NAME}
+      git pull
+    popd
   else
     git clone "git@github.com:shapoco/${REPO_NAME}.git"
   fi
