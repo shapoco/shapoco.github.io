@@ -6,7 +6,7 @@ class ShapocoNetStamp {
   static API_URL_BASE = ShapocoNetStamp.DEBUG_MODE ?
     `${window.location.href.match(ShapocoNetStamp.LOCALHOST_PATTERN)[1]}/stamp/v${ShapocoNetStamp.API_VERSION}` :
     `https://www.shapoco.net/stamp/v${ShapocoNetStamp.API_VERSION}`;
-  static URL_POSTFIX = '20241021001300';
+  static URL_POSTFIX = '20241224205700';
   static COOKIE_KEY = 'ShapocoNetStamp_clientId';
 
   constructor() {
@@ -580,7 +580,9 @@ class ShapocoNetStamp {
     this.emojiList.innerHTML = '';
     var items = [];
     if (icat < 0) {
-      items = this.history.map(emoji => this.emojiDict[emoji]);
+      items = this.history
+        .filter(emoji => emoji in this.emojiDict)
+        .map(emoji => this.emojiDict[emoji]);
     }
     else {
       items = this.emojiCategories[icat].items;
