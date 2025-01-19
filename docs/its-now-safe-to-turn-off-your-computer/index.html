@@ -14,19 +14,18 @@
     <meta property="og:description" content="例のアレ" />
     <meta property="og:image" content="https://shapoco.github.io/its-now-safe-to-turn-off-your-computer/card.png" />
 
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-BMDGFGR0Z4"></script>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-171109827-1"></script>
     <script>
-      var remotHost = window.location.hostname;
-      if (remotHost == "localhost") {
-        console.log(`Google Analytics disabled on: '${remotHost}'`);
+      var remoteHost = window.location.hostname;
+      if (remoteHost == "localhost") {
+        console.log(`Google Analytics disabled on: '${remoteHost}'`);
       }
       else {
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
-
-        gtag('config', 'G-BMDGFGR0Z4');
+        gtag('config', 'UA-171109827-1');
       }
     </script>
     
